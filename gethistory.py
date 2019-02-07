@@ -2,11 +2,12 @@ import requests
 import csv
 from io import StringIO
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 def scrapeHistory():
     """Scrape history from team history feed."""
 
-    payload_array = [['day', 'date', 'year', 'event', 'time', 'home', 'home_score', 'away', 'away_score', 'tier']]
+    payload_array = [['day', 'game_date', 'event', 'year', 'time', 'home', 'home_score', 'away', 'away_score', 'tier']]
 
     # GET SCHOOLS LIST
     url = 'https://home.gotsoccer.com/rankings/team_async.aspx?TeamID=862573&pagesize=100&mode=History'
@@ -22,8 +23,9 @@ def scrapeHistory():
     for index, game in enumerate(gameTables):   # default is zero
 
         date_list = dates[index].text.split(', ')
+        datetime_object = datetime.strptime(dates[index].text, '%A, %B %d, %Y')
         game_day = date_list[0].lstrip()
-        game_date = date_list[1]
+        game_date = datetime_object
         game_year = date_list[2]
         event = events[index].text
 
@@ -37,7 +39,7 @@ def scrapeHistory():
             home_score = score_list[0]
             away_score = score_list[1]
             game_tier = tds[4].text
-            payload_array.append([game_day, game_date, game_year, event, game_time, home_team, home_score, away_team, away_score, game_tier])
+            payload_array.append([game_day, game_date, event, game_year, game_time, home_team, home_score, away_team, away_score, game_tier])
 
     si = StringIO()
     cw = csv.writer(si)
